@@ -1,1 +1,7 @@
 python-dotenv
+ipykernel
+pandas
+matplotlib
+streamlit
+altair
+numpy
