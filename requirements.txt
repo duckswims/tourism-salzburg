@@ -5,3 +5,8 @@ matplotlib
 streamlit
 altair
 numpy
+pdfplumber
+pandas
+openpyxl
+matplotlib
+requests
