@@ -65,9 +65,12 @@ with st.sidebar:
 
 
 # Top row (you can leave empty or put something)
-col1, col2 = st.columns(2)
-col1.write("Chart1")   # optional
-col2.write("Chart2")  # optional
+# col1, col2 = st.columns(2)
+# col1.write("Chart1")   # optional
+# col2.write("Chart2")  # optional
+
+# st.subheader('')
+st.image("assets/bus_route.png")
 
 # Bottom row with the two charts
 col3, col4 = st.columns(2)
@@ -94,12 +97,12 @@ quantile_per_kurs['predicted'] = quantile_per_kurs['Einsteiger'] / scan_rate
 df_predicted = quantile_per_kurs[['Kurs', 'predicted']]
 
 # Streamlit Altair scatter plot
-col3.subheader("Tourist Ridership per Trip")
+col3.subheader("Tourist Ridership")
 
 # Original scatter
 scatter_chart = alt.Chart(df_grouped).mark_circle(size=60).encode(
-    x=alt.X('Kurs:O', title='Kurs'),
-    y=alt.Y('Einsteiger:Q', title='Sum of Einsteiger'),
+    x=alt.X('Kurs:O', title='Route'),
+    y=alt.Y('Einsteiger:Q', title='Passengers boarded'),
     # color=alt.Color('Betriebstag:T', title='Betriebstag'),
     tooltip=['Betriebstag:T', 'Kurs', 'Einsteiger']
 )
@@ -138,12 +141,12 @@ daily_sum['estimated'] = np.where(
 )
 
 # Streamlit Altair plot
-col4.subheader("Actual vs Estimated Tourists")
+col4.subheader("Tourists Projection")
 
 # Actual scanned line
 actual_line = alt.Chart(daily_sum).mark_line(color='blue', point=True).encode(
-    x=alt.X('Betriebstag:T', title='Betriebstag'),
-    y=alt.Y('Einsteiger:Q', title='Number of Einsteiger'),
+    x=alt.X('Betriebstag:T', title='Date'),
+    y=alt.Y('Einsteiger:Q', title='Passengers boarded'),
     tooltip=['Betriebstag:T', 'Einsteiger', 'is_weekend']
 )
 
