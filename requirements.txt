@@ -1,1 +1,6 @@
 python-dotenv
+pdfplumber
+pandas
+openpyxl
+matplotlib
+requests
