@@ -1,87 +1,36 @@
-import pandas as pd
+# main_app.py
 import streamlit as st
-# import plotly.express as px
 import altair as alt
-import json
-import datetime
 import numpy as np
+from base import Q3_2025_df, gemeinde
+from components.sidebar import render_sidebar
 
-# Import gemeinde_id
-with open('data/gemeinde_data.json', 'r') as f:
-    gemeinde = json.load(f)
-
-
-filename = 'data/Zaehldaten_Q3_2025.xlsx'
-df = pd.read_excel(filename)
-
+# Header
 header1, header2 = st.columns([4, 1])
-
 header1.title('Bus 670')
 header2.image("assets/Salzburg-Verkehr-Logo.png")
 
-
+# Sidebar
 with st.sidebar:
-    st.header("🔍 Filters")
+    filters = render_sidebar(Q3_2025_df)
 
-    # Tagesart (multi-select)
-    tagesarten = sorted(df['Tagesart'].dropna().unique())
-    selected_tagesarten = st.multiselect("Tagesart", options=tagesarten, default=tagesarten[:1])
+# Filter dataframe
+df = Q3_2025_df.copy()
+df = df[df['Linie'] == filters['selected_linie']]
+df = df[df['Linienrichtung'] == filters['selected_richtung']]
+df = df[df['Betriebstag'].dt.month.isin(filters['selected_months'])]
 
-    # Linie (selectbox)
-    linien = sorted(df['Linie'].dropna().unique())
-    selected_linie = st.selectbox("Linie (Bus Line)", options=linien, index=1)
-
-    # Linienrichtung (selectbox)
-    richtung_map = {}
-    for linie in linien:
-        sub = df[df['Linie'] == linie]
-        for richtung in sorted(sub['Linienrichtung'].dropna().unique()):
-            if 'Haltestellenabfolge' in sub.columns:
-                first_stop = sub.loc[sub['Linienrichtung'] == richtung, 'HaltestelleName'].iloc[0]
-                last_stop = sub.loc[sub['Linienrichtung'] == richtung, 'HaltestelleName'].iloc[-1]
-                richtung_map[(linie, richtung)] = f"{first_stop} → {last_stop}"
-            else:
-                richtung_map[(linie, richtung)] = f"Direction {richtung}"
-
-    verfuegbare_richtungen = [
-        (richtung, richtung_map[(selected_linie, richtung)])
-        for richtung in sorted(df[df['Linie'] == selected_linie]['Linienrichtung'].dropna().unique())
-    ]
-    selected_richtung_label = st.selectbox(
-        "Linienrichtung",
-        options=[label for _, label in verfuegbare_richtungen],
-        index=0
-    )
-    selected_richtung = [r for r, label in verfuegbare_richtungen if label == selected_richtung_label][0]
-
-    # Month (multi-select)
-    months = sorted(df['Betriebstag'].dt.month.unique())
-    selected_months = st.multiselect(
-        "Month",
-        options=months,
-        default=[months[1]],
-        format_func=lambda x: datetime.date(1900, x, 1).strftime('%B')
-    )
+# Add weekday and weekend flags
+df['weekday'] = df['Betriebstag'].dt.weekday
+df['is_weekend'] = df['weekday'].isin([5,6])
 
 
-# Top row (you can leave empty or put something)
-# col1, col2 = st.columns(2)
-# col1.write("Chart1")   # optional
-# col2.write("Chart2")  # optional
-
-# st.subheader('')
+# Top row with image
 st.image("assets/bus_route.png")
 
 # Bottom row with the two charts
 col3, col4 = st.columns(2)
 
-
-# df = df[df['Tagesart'] == 'Mo-Fr Ferien']
-df = df[df['Linie'] == 670] # Filter for line 670
-df = df[df['Linienrichtung'] == 1] # Filter for Linierichtung 1
-df = df[df['Betriebstag'].dt.month == 8]
-df['weekday'] = df['Betriebstag'].dt.weekday
-df['is_weekend'] = df['weekday'].isin([5,6]).astype(bool)
 
 
 # Group by Kurs and Betriebstag
